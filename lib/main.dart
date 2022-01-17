@@ -2,16 +2,10 @@
 
 import 'dart:html';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'task.dart';
 
-class Todos {
-  Todos({
-    required this.name,
-  });
-  final String name;
-}
+enum Status { pending, canceled, completed }
 
 void main() => runApp(const TodoApp());
 
@@ -42,8 +36,10 @@ class MyStatefulWidget extends StatefulWidget {
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController myController = TextEditingController();
-  List<Todos> todos = <Todos>[];
-  DateTime date = DateTime.now();
+  List todos = [];
+  DateTime taskdate = DateTime.now();
+  bool buttonenabled = true;
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -82,13 +78,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
           ),
           ElevatedButton(
-              child: Text('select date'), onPressed: selectTimePicker(context)),
-          Text(date.day.toString()),
-          Text(date.month.toString()),
-          Text(date.year.toString()),
+              child: Text('select date'),
+              onPressed: () => _selectDate(context)),
+          //  Text(date.day.toString()),
+          //  Text(date.month.toString()),
+          //  Text(date.year.toString()),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.black,
+                ),
                 child: const Text('Submit'),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -105,11 +105,25 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                     return Container(
                       height: 50,
                       margin: EdgeInsets.all(2),
-                      child: Center(
-                          child: Text(
-                        '${todos[index]}',
-                        style: TextStyle(fontSize: 18),
-                      )),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Padding(padding: EdgeInsets.all(100.0)),
+                            Text('${todos[index]}' '${taskdate.toString()}',
+                                style: TextStyle(fontSize: 18)),
+                            Spacer(flex: 3),
+                            ElevatedButton(
+                                onPressed: () {
+                                  completedTask();
+                                },
+                                child: Text('Canceled')),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                            ),
+                            ElevatedButton(
+                                onPressed: buttonenabled ? () {} : null,
+                                child: Text('Completed'))
+                          ]),
                     );
                   }))
         ],
@@ -117,26 +131,38 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  selectTimePicker(BuildContext context) {
-    Future<Null> selectTimePicker(BuildContext context) async {
-      final DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: date,
-          firstDate: DateTime(1940),
-          lastDate: DateTime(2030));
-      if (picked != null && picked != date) {
-        setState(() {
-          date = picked;
-          print(date.toString());
-        });
-      }
+  // selectTimePicker(BuildContext context) {
+  //   Future<Null> selectTimePicker(BuildContext context) async {
+  //     final DateTime? picked = await showDatePicker(
+  //         context: context,
+  //         initialDate: date,
+  //         firstDate: DateTime(1940),
+  //         lastDate: DateTime(2030));
+  //     if (picked != null && picked != date) {
+  //       setState(() {
+  //         date = picked;
+  //         print(date.toString());
+  //       });
+  //     }
+  //   }
+  _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: taskdate, // Refer step 1
+      firstDate: DateTime(2000), // Required
+      lastDate: DateTime(2025), // Required
+    );
+    if (picked != null && picked != taskdate) {
+      setState(() {
+        taskdate = picked;
+      });
     }
   }
 
   void _addTodoItem() {
     setState(() {
-      todos.add(Todos(name: myController.text));
-      todos.map((todos) => Todos(name: myController.text)).toList();
+      todos.insert(0, myController.text);
+      //todos.map((todos) => Todos(name: myController.toString())).toList();
       //todos.insert(0,myController.value);
       // If the form is valid, display a snackbar. In the real world,
       // you'd often call a server or save the information in a database.
@@ -145,5 +171,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         //_todos.add(Todos(name: name, checked: false));
 
         );
+  }
+
+  void completedTask() {
+    setState(() {
+      buttonenabled = false;
+      // If the form is valid, display a snackbar. In the real world,
+      // you'd often call a server or save the information in a database.
+    });
   }
 }
