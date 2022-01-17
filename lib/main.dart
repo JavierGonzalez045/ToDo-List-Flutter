@@ -7,6 +7,14 @@ import 'task.dart';
 
 enum Status { pending, canceled, completed }
 
+// ignore: must_be_immutable
+class Todo extends MyStatefulWidget {
+  Todo({Key? key, required this.name, required this.taskdate})
+      : super(key: key);
+  final String name;
+  DateTime taskdate;
+}
+
 void main() => runApp(const TodoApp());
 
 class TodoApp extends StatelessWidget {
@@ -36,7 +44,7 @@ class MyStatefulWidget extends StatefulWidget {
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController myController = TextEditingController();
-  List todos = [];
+  final List<Todo> todos = <Todo>[];
   DateTime taskdate = DateTime.now();
   bool buttonenabled = true;
 
@@ -92,7 +100,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 child: const Text('Submit'),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    _addTodoItem();
+                    _addTodoItem(myController.text);
                   }
                 },
                 // Validate returns true if the form is valid, or false otherwise.
@@ -108,8 +116,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            Padding(padding: EdgeInsets.all(100.0)),
-                            Text('${todos[index]}' '${taskdate.toString()}',
+                            Text('${todos[0]}', style: TextStyle(fontSize: 18)),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                            ),
+                            Text(
+                                "${taskdate.day}/${taskdate.month}/${taskdate.year}",
                                 style: TextStyle(fontSize: 18)),
                             Spacer(flex: 3),
                             ElevatedButton(
@@ -131,25 +143,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 
-  // selectTimePicker(BuildContext context) {
-  //   Future<Null> selectTimePicker(BuildContext context) async {
-  //     final DateTime? picked = await showDatePicker(
-  //         context: context,
-  //         initialDate: date,
-  //         firstDate: DateTime(1940),
-  //         lastDate: DateTime(2030));
-  //     if (picked != null && picked != date) {
-  //       setState(() {
-  //         date = picked;
-  //         print(date.toString());
-  //       });
-  //     }
-  //   }
   _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: taskdate, // Refer step 1
-      firstDate: DateTime(2000), // Required
+      firstDate: DateTime.now(), // Required
       lastDate: DateTime(2025), // Required
     );
     if (picked != null && picked != taskdate) {
@@ -159,11 +157,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     }
   }
 
-  void _addTodoItem() {
+  void _addTodoItem(String name) {
     setState(() {
-      todos.insert(0, myController.text);
-      //todos.map((todos) => Todos(name: myController.toString())).toList();
-      //todos.insert(0,myController.value);
+      todos.add(Todo(name: name, taskdate: taskdate));
+      //todos.insert(0, myController.text);
+      //todos.map((todos) => myController.text).toList();
       // If the form is valid, display a snackbar. In the real world,
       // you'd often call a server or save the information in a database.
     }
