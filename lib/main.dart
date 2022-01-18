@@ -214,6 +214,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ));
     });
     myController.clear();
+    taskdate = DateTime.now();
   }
 
   completedTask(String name, int index) {
