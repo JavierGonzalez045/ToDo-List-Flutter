@@ -55,6 +55,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   DateTime taskdate = DateTime.now();
   bool buttonenabled = true;
 
+  var my;
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -80,6 +82,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 return 'Please enter some text';
               } else if (value.startsWith(' ')) {
                 return 'Please enter valid text';
+              } else if (value.length >= 20) {
+                return 'Maximun characters length exceeded';
               }
               return null;
             },
@@ -132,19 +136,23 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                 "${todos[index].taskdate.day}/${todos[index].taskdate.month}/${todos[index].taskdate.year}",
                                 style: TextStyle(fontSize: 18)),
                             Padding(padding: EdgeInsets.only(left: 20.0)),
-                            Text(todos[index].status.toString(),
+                            Text(todos[index].status.name,
                                 style: TextStyle(fontSize: 18)),
                             Spacer(flex: 3),
                             ElevatedButton(
                                 onPressed: () {
-                                  completedTask();
+                                  canceledTask(myController.text, index);
                                 },
                                 child: Text('Canceled')),
                             Padding(
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
-                                onPressed: buttonenabled ? () {} : null,
+                                onPressed: buttonenabled
+                                    ? () {
+                                        completedTask(myController.text, index);
+                                      }
+                                    : null,
                                 child: Text('Completed'))
                           ]),
                     );
@@ -192,9 +200,21 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         );
   }
 
-  void completedTask() {
+  void completedTask(String name, int index) {
     setState(() {
-      buttonenabled = false;
+      //buttonenabled = false;
+      todos[index] =
+          Todo(name: name, taskdate: taskdate, status: Status.completed);
+      // If the form is valid, display a snackbar. In the real world,
+      // you'd often call a server or save the information in a database.
+    });
+  }
+
+  void canceledTask(String name, int index) {
+    setState(() {
+      //buttonenabled = false;
+      todos[index] =
+          Todo(name: name, taskdate: taskdate, status: Status.canceled);
       // If the form is valid, display a snackbar. In the real world,
       // you'd often call a server or save the information in a database.
     });
