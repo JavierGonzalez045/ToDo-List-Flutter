@@ -56,8 +56,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   DateTime taskdate = DateTime.now();
   bool buttonenabled = true;
 
-  var my;
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -87,8 +85,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                 return 'Maximun characters length exceeded';
               }
               var isExist = false;
-              for (var todo in todos) {
-                if (todo.name == myController.text) {
+              for (var todos in todos) {
+                if (todos.name == myController.text) {
                   isExist = true;
                 }
               }
@@ -163,6 +161,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                         canceledTask(myController.text, index);
                                       }
                                     : null,
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.red),
                                 child: Text('Canceled')),
                             Padding(
                               padding: EdgeInsets.all(5.0),
@@ -173,6 +173,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                         completedTask(myController.text, index);
                                       }
                                     : null,
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.green),
                                 child: Text('Completed'))
                           ]),
                     );
@@ -211,25 +213,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         button: true,
       ));
     });
+    myController.clear();
   }
 
-  void completedTask(String name, int index) {
+  completedTask(String name, int index) {
     setState(() {
-      todos[index] = Todo(
-          name: name,
-          taskdate: taskdate,
-          status: Status.completed,
-          button: false);
+      todos[index].status = Status.completed;
+      todos[index].button = false;
     });
   }
 
-  void canceledTask(String name, int index) {
+  canceledTask(String name, int index) {
     setState(() {
-      todos[index] = Todo(
-          name: name,
-          taskdate: taskdate,
-          status: Status.canceled,
-          button: false);
+      todos[index].status = Status.canceled;
+      todos[index].button = false;
     });
   }
 }
