@@ -15,11 +15,13 @@ class Todo extends MyStatefulWidget {
       {Key? key,
       required this.name,
       required this.taskdate,
-      required this.status})
+      required this.status,
+      required this.button})
       : super(key: key);
   final String name;
   DateTime taskdate;
   Status status;
+  bool button;
 }
 
 class TodoApp extends StatelessWidget {
@@ -101,9 +103,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               icon: const Icon(Icons.calendar_today),
               tooltip: 'Due Date',
               onPressed: () => _selectDate(context)),
-          //  Text(date.day.toString()),
-          //  Text(date.month.toString()),
-          //  Text(date.year.toString()),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(
@@ -140,15 +139,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                 style: TextStyle(fontSize: 18)),
                             Spacer(flex: 3),
                             ElevatedButton(
-                                onPressed: () {
-                                  canceledTask(myController.text, index);
-                                },
+                                onPressed: todos[index].button
+                                    ? () {
+                                        canceledTask(myController.text, index);
+                                      }
+                                    : null,
                                 child: Text('Canceled')),
                             Padding(
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
-                                onPressed: buttonenabled
+                                onPressed: todos[index].button
                                     ? () {
                                         completedTask(myController.text, index);
                                       }
@@ -182,41 +183,34 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     }
   }
 
-  void _addTodoItem(String name) {
+  _addTodoItem(String name) {
     setState(() {
       todos.add(Todo(
         name: name,
         taskdate: taskdate,
         status: Status.pending,
+        button: true,
       ));
-      //todos.insert(0, myController.text);
-      //todos.map((todos) => myController.text).toList();
-      // If the form is valid, display a snackbar. In the real world,
-      // you'd often call a server or save the information in a database.
-    }
-
-        //_todos.add(Todos(name: name, checked: false));
-
-        );
+    });
   }
 
   void completedTask(String name, int index) {
     setState(() {
-      //buttonenabled = false;
-      todos[index] =
-          Todo(name: name, taskdate: taskdate, status: Status.completed);
-      // If the form is valid, display a snackbar. In the real world,
-      // you'd often call a server or save the information in a database.
+      todos[index] = Todo(
+          name: name,
+          taskdate: taskdate,
+          status: Status.completed,
+          button: false);
     });
   }
 
   void canceledTask(String name, int index) {
     setState(() {
-      //buttonenabled = false;
-      todos[index] =
-          Todo(name: name, taskdate: taskdate, status: Status.canceled);
-      // If the form is valid, display a snackbar. In the real world,
-      // you'd often call a server or save the information in a database.
+      todos[index] = Todo(
+          name: name,
+          taskdate: taskdate,
+          status: Status.canceled,
+          button: false);
     });
   }
 }
