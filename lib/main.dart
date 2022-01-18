@@ -2,20 +2,25 @@
 
 import 'dart:html';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'task.dart';
 
 enum Status { pending, canceled, completed }
+void main() => runApp(const TodoApp());
 
 // ignore: must_be_immutable
 class Todo extends MyStatefulWidget {
-  Todo({Key? key, required this.name, required this.taskdate})
+  Todo(
+      {Key? key,
+      required this.name,
+      required this.taskdate,
+      required this.status})
       : super(key: key);
   final String name;
   DateTime taskdate;
+  Status status;
 }
-
-void main() => runApp(const TodoApp());
 
 class TodoApp extends StatelessWidget {
   const TodoApp({Key? key}) : super(key: key);
@@ -26,6 +31,8 @@ class TodoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: _title,
+      theme: ThemeData(brightness: Brightness.dark),
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(title: const Text(_title)),
         body: const MyStatefulWidget(),
@@ -77,16 +84,18 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               return null;
             },
           ),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 5.0)),
           Text(
-            "Insert Due Date",
+            'Insert Due Date',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
               fontFamily: "Georgia",
             ),
           ),
-          ElevatedButton(
-              child: Text('select date'),
+          IconButton(
+              icon: const Icon(Icons.calendar_today),
+              tooltip: 'Due Date',
               onPressed: () => _selectDate(context)),
           //  Text(date.day.toString()),
           //  Text(date.month.toString()),
@@ -116,12 +125,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            Text('${todos[0]}', style: TextStyle(fontSize: 18)),
-                            Padding(
-                              padding: EdgeInsets.all(5.0),
-                            ),
+                            Text(todos[index].name,
+                                style: TextStyle(fontSize: 18)),
+                            Padding(padding: EdgeInsets.only(left: 20.0)),
                             Text(
-                                "${taskdate.day}/${taskdate.month}/${taskdate.year}",
+                                "${todos[index].taskdate.day}/${todos[index].taskdate.month}/${todos[index].taskdate.year}",
+                                style: TextStyle(fontSize: 18)),
+                            Padding(padding: EdgeInsets.only(left: 20.0)),
+                            Text(todos[index].status.toString(),
                                 style: TextStyle(fontSize: 18)),
                             Spacer(flex: 3),
                             ElevatedButton(
@@ -149,6 +160,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       initialDate: taskdate, // Refer step 1
       firstDate: DateTime.now(), // Required
       lastDate: DateTime(2025), // Required
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark(), // This will change to dark theme.
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != taskdate) {
       setState(() {
@@ -159,7 +176,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   void _addTodoItem(String name) {
     setState(() {
-      todos.add(Todo(name: name, taskdate: taskdate));
+      todos.add(Todo(
+        name: name,
+        taskdate: taskdate,
+        status: Status.pending,
+      ));
       //todos.insert(0, myController.text);
       //todos.map((todos) => myController.text).toList();
       // If the form is valid, display a snackbar. In the real world,
