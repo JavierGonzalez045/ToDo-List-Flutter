@@ -54,7 +54,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   TextEditingController myController = TextEditingController();
   final List<Todo> todos = <Todo>[];
   DateTime taskdate = DateTime.now();
-  bool buttonenabled = true;
+  final dateFormate = DateFormat("dd-MM-yyyy");
 
   @override
   Widget build(BuildContext context) {
@@ -106,12 +106,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               fontFamily: "Georgia",
             ),
           ),
-          Text(
-              taskdate.day.toString() +
-                  '/' +
-                  taskdate.month.toString() +
-                  '/' +
-                  taskdate.year.toString(),
+          Text(dateFormate.format(taskdate),
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -158,7 +153,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             ElevatedButton(
                                 onPressed: todos[index].button
                                     ? () {
-                                        canceledTask(myController.text, index);
+                                        updateTask(myController.text, index,
+                                            Status.canceled);
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(
@@ -170,7 +166,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                             ElevatedButton(
                                 onPressed: todos[index].button
                                     ? () {
-                                        completedTask(myController.text, index);
+                                        updateTask(myController.text, index,
+                                            Status.completed);
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(
@@ -217,16 +214,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     taskdate = DateTime.now();
   }
 
-  completedTask(String name, int index) {
+  updateTask(String name, int index, Status status) {
     setState(() {
-      todos[index].status = Status.completed;
-      todos[index].button = false;
-    });
-  }
-
-  canceledTask(String name, int index) {
-    setState(() {
-      todos[index].status = Status.canceled;
+      todos[index].status = status;
       todos[index].button = false;
     });
   }
