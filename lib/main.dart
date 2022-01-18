@@ -4,7 +4,6 @@ import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'task.dart';
 
 enum Status { pending, canceled, completed }
 void main() => runApp(const TodoApp());
@@ -87,18 +86,38 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               } else if (value.length >= 20) {
                 return 'Maximun characters length exceeded';
               }
+              var isExist = false;
+              for (var todo in todos) {
+                if (todo.name == myController.text) {
+                  isExist = true;
+                }
+              }
+
+              if (isExist) {
+                return 'Same name task';
+              }
               return null;
             },
           ),
           Padding(padding: const EdgeInsets.symmetric(vertical: 5.0)),
           Text(
-            'Insert Due Date',
+            'Insert Due Date:',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
               fontFamily: "Georgia",
             ),
           ),
+          Text(
+              taskdate.day.toString() +
+                  '/' +
+                  taskdate.month.toString() +
+                  '/' +
+                  taskdate.year.toString(),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: "Georgia")),
           IconButton(
               icon: const Icon(Icons.calendar_today),
               tooltip: 'Due Date',
