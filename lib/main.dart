@@ -1,9 +1,9 @@
 // ignore_for_file: prefer_const_constructors
-
-import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:todo_list_flutter/models/ApiService.dart';
+import 'package:http/http.dart' as http;
 
 enum Status { pending, canceled, completed }
 void main() => runApp(const TodoApp());
@@ -32,7 +32,7 @@ class TodoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: _title,
-      theme: ThemeData(brightness: Brightness.dark),
+      theme: ThemeData(brightness: Brightness.light),
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(title: const Text(_title)),
@@ -56,8 +56,6 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   DateTime taskdate = DateTime.now();
   bool buttonenabled = true;
 
-  var my;
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -70,7 +68,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
-              fontFamily: "Georgia",
+              fontFamily: "Sans-serif",
             ),
           ),
           TextFormField(
@@ -86,18 +84,38 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               } else if (value.length >= 20) {
                 return 'Maximun characters length exceeded';
               }
+              var isExist = false;
+              for (var todos in todos) {
+                if (todos.name == myController.text) {
+                  isExist = true;
+                }
+              }
+
+              if (isExist) {
+                return 'Same name task';
+              }
               return null;
             },
           ),
           Padding(padding: const EdgeInsets.symmetric(vertical: 5.0)),
           Text(
-            'Insert Due Date',
+            'Insert Due Date:',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
-              fontFamily: "Georgia",
+              fontFamily: "Sans-serif",
             ),
           ),
+          Text(
+              taskdate.day.toString() +
+                  '/' +
+                  taskdate.month.toString() +
+                  '/' +
+                  taskdate.year.toString(),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: "Sans-serif")),
           IconButton(
               icon: const Icon(Icons.calendar_today),
               tooltip: 'Due Date',
@@ -122,50 +140,44 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   itemCount: todos.length,
                   itemBuilder: (BuildContext context, int index) {
                     return Container(
-                        height: 50,
-                        margin: EdgeInsets.all(2),
-                        child: Card(
-                          elevation: 6,
-                          color: Color.fromARGB(75, 255, 255, 255),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                Padding(padding: EdgeInsets.only(left: 20)),
-                                Text(todos[index].name,
-                                    style: TextStyle(fontSize: 18)),
-                                Padding(padding: EdgeInsets.only(left: 20.0)),
-                                Text(
-                                    "${todos[index].taskdate.day}/${todos[index].taskdate.month}/${todos[index].taskdate.year}",
-                                    style: TextStyle(fontSize: 18)),
-                                Padding(padding: EdgeInsets.only(left: 20.0)),
-                                Text(todos[index].status.name,
-                                    style: TextStyle(fontSize: 18)),
-                                Spacer(flex: 3),
-                                ElevatedButton(
-                                    onPressed: todos[index].button
-                                        ? () {
-                                            canceledTask(
-                                                myController.text, index);
-                                          }
-                                        : null,
-                                    style: ElevatedButton.styleFrom(
-                                        primary: Colors.red),
-                                    child: Text('Canceled')),
-                                Padding(
-                                  padding: EdgeInsets.all(5.0),
-                                ),
-                                ElevatedButton(
-                                    onPressed: todos[index].button
-                                        ? () {
-                                            completedTask(
-                                                myController.text, index);
-                                          }
-                                        : null,
-                                    style: ElevatedButton.styleFrom(
-                                        primary: Colors.green),
-                                    child: Text('Completed'))
-                              ]),
-                        ));
+                      height: 50,
+                      margin: EdgeInsets.all(2),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Text(todos[index].name,
+                                style: TextStyle(fontSize: 18)),
+                            Padding(padding: EdgeInsets.only(left: 20.0)),
+                            Text(
+                                "${todos[index].taskdate.day}/${todos[index].taskdate.month}/${todos[index].taskdate.year}",
+                                style: TextStyle(fontSize: 18)),
+                            Padding(padding: EdgeInsets.only(left: 20.0)),
+                            Text(todos[index].status.name,
+                                style: TextStyle(fontSize: 18)),
+                            Spacer(flex: 3),
+                            ElevatedButton(
+                                onPressed: todos[index].button
+                                    ? () {
+                                        canceledTask(myController.text, index);
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.red),
+                                child: Text('Canceled')),
+                            Padding(
+                              padding: EdgeInsets.all(5.0),
+                            ),
+                            ElevatedButton(
+                                onPressed: todos[index].button
+                                    ? () {
+                                        completedTask(myController.text, index);
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                    primary: Colors.green),
+                                child: Text('Completed'))
+                          ]),
+                    );
                   }))
         ],
       ),
@@ -201,25 +213,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         button: true,
       ));
     });
+    myController.clear();
   }
 
-  void completedTask(String name, int index) {
+  completedTask(String name, int index) {
     setState(() {
-      todos[index] = Todo(
-          name: name,
-          taskdate: taskdate,
-          status: Status.completed,
-          button: false);
+      todos[index].status = Status.completed;
+      todos[index].button = false;
     });
   }
 
-  void canceledTask(String name, int index) {
+  canceledTask(String name, int index) {
     setState(() {
-      todos[index] = Todo(
-          name: name,
-          taskdate: taskdate,
-          status: Status.canceled,
-          button: false);
+      todos[index].status = Status.canceled;
+      todos[index].button = false;
     });
   }
 }
