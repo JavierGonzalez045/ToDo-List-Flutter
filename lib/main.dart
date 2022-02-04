@@ -1,28 +1,15 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:todo_list_flutter/models/ApiService.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'package:todo_list_flutter/models/Todo.dart';
 
 enum Status { pending, canceled, completed }
 void main() => runApp(const TodoApp());
 
 // ignore: must_be_immutable
-class Todo extends MyStatefulWidget {
-  Todo(
-      {Key? key,
-      required this.name,
-      required this.taskdate,
-      required this.status,
-      required this.button})
-      : super(key: key);
-  final String name;
-  DateTime taskdate;
-  Status status;
-  bool button;
-}
-
 class TodoApp extends StatelessWidget {
   const TodoApp({Key? key}) : super(key: key);
 
@@ -50,6 +37,7 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  late Future<Todo> futureTodo;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController myController = TextEditingController();
   final List<Todo> todos = <Todo>[];
@@ -58,6 +46,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
+    futureTodo = getTodo();
     return Form(
       key: _formKey,
       child: Column(
@@ -151,7 +140,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                 style: TextStyle(fontSize: 18)),
                             Spacer(flex: 3),
                             ElevatedButton(
-                                onPressed: todos[index].button
+                                onPressed: todos[index].status == Status.pending
                                     ? () {
                                         updateTask(myController.text, index,
                                             Status.canceled);
@@ -164,7 +153,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
-                                onPressed: todos[index].button
+                                onPressed: todos[index].status == Status.pending
                                     ? () {
                                         updateTask(myController.text, index,
                                             Status.completed);
@@ -175,7 +164,20 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                 child: Text('Completed'))
                           ]),
                     );
-                  }))
+                  })),
+          FutureBuilder<Todo>(
+            future: futureTodo,
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data!.name);
+              } else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+
+              // By default, show a loading spinner.
+              return const CircularProgressIndicator();
+            },
+          )
         ],
       ),
     );
@@ -207,7 +209,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         name: name,
         taskdate: taskdate,
         status: Status.pending,
-        button: true,
+        id: '',
       ));
     });
     myController.clear();
@@ -217,7 +219,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   updateTask(String name, int index, Status status) {
     setState(() {
       todos[index].status = status;
-      todos[index].button = false;
     });
   }
 }
+//----------------------------------------------------------------------
