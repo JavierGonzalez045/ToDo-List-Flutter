@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'package:todo_list_flutter/models/ApiService.dart';
-import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'package:todo_list_flutter/models/Todo.dart';
+import 'Models/Todo.dart';
+import 'Models/ApiService.dart';
 
 enum Status { pending, canceled, completed }
 void main() => runApp(const TodoApp());
@@ -37,16 +35,16 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  late Future<Todo> futureTodo;
+  late Future<todo> futureTodo;
+  final HttpService httpService = HttpService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController myController = TextEditingController();
-  final List<Todo> todos = <Todo>[];
+  final List<todo> todos = <todo>[];
   DateTime taskdate = DateTime.now();
   final dateFormate = DateFormat("dd-MM-yyyy");
 
   @override
   Widget build(BuildContext context) {
-    futureTodo = getTodo();
     return Form(
       key: _formKey,
       child: Column(
@@ -75,7 +73,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
               }
               var isExist = false;
               for (var todos in todos) {
-                if (todos.name == myController.text) {
+                if (todos.title == myController.text) {
                   isExist = true;
                 }
               }
@@ -129,11 +127,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            Text(todos[index].name,
+                            Text(todos[index].title,
                                 style: TextStyle(fontSize: 18)),
                             Padding(padding: EdgeInsets.only(left: 20.0)),
                             Text(
-                                "${todos[index].taskdate.day}/${todos[index].taskdate.month}/${todos[index].taskdate.year}",
+                                "${todos[index].duedate.day}/${todos[index].duedate.month}/${todos[index].duedate.year}",
                                 style: TextStyle(fontSize: 18)),
                             Padding(padding: EdgeInsets.only(left: 20.0)),
                             Text(todos[index].status.name,
@@ -149,7 +147,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                                 style: ElevatedButton.styleFrom(
                                     primary: Colors.red),
                                 child: Text('Canceled')),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.all(5.0),
                             ),
                             ElevatedButton(
@@ -165,11 +163,21 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                           ]),
                     );
                   })),
-          FutureBuilder<Todo>(
-            future: futureTodo,
-            builder: (context, AsyncSnapshot snapshot) {
+          FutureBuilder(
+            future: httpService.getPosts(),
+            builder:
+                (BuildContext context, AsyncSnapshot<List<todo>> snapshot) {
               if (snapshot.hasData) {
-                return Text(snapshot.data!.name);
+                List<todo>? posts = snapshot.data;
+                return ListView(
+                  children: posts!
+                      .map(
+                        (todo post) => ListTile(
+                          title: Text(post.title),
+                        ),
+                      )
+                      .toList(),
+                );
               } else if (snapshot.hasError) {
                 return Text('${snapshot.error}');
               }
@@ -205,9 +213,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   _addTodoItem(String name) {
     setState(() {
-      todos.add(Todo(
-        name: name,
-        taskdate: taskdate,
+      todos.add(todo(
+        title: name,
+        duedate: taskdate,
         status: Status.pending,
         id: '',
       ));
@@ -222,4 +230,5 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     });
   }
 }
+
 //----------------------------------------------------------------------
