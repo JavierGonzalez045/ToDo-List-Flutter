@@ -11,9 +11,22 @@ class HttpService {
 
   Future<List<todo>> getPosts() async {
     final response = await http.get(Uri.parse(url));
+    var jsonData = jsonDecode(response.body);
+    List<todo> tasks = [];
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
+      for (var u in jsonData) {
+        todo gettask = todo(
+            title: u['title'],
+            duedate: u['duedate'],
+            status: u['status'],
+            id: u['id']);
+        tasks.add(gettask);
+      }
+      print(tasks.length);
+      return tasks;
+    }
+    /*  List<dynamic> body = jsonDecode(response.body);
 
       List<todo> posts = body
           .map(
@@ -21,8 +34,8 @@ class HttpService {
           )
           .toList();
 
-      return posts;
-    } else {
+      return posts; */
+    else {
       throw "Unable to retrieve posts.";
     }
   }

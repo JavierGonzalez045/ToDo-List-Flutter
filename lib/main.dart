@@ -165,19 +165,25 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                   })),
           FutureBuilder(
             future: httpService.getPosts(),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<todo>> snapshot) {
+            builder: (context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                List<todo>? posts = snapshot.data;
-                return ListView(
-                  children: posts!
+                //List<todo>? posts = snapshot.data;
+                return ListView.builder(
+                    itemCount: snapshot.data.lenght,
+                    itemBuilder: (context, i) {
+                      return ListTile(
+                        title: Text(snapshot.data[i].duedate),
+                      );
+                    });
+
+                /*   children: posts!
                       .map(
                         (todo post) => ListTile(
                           title: Text(post.title),
                         ),
                       )
                       .toList(),
-                );
+                ); */
               } else if (snapshot.hasError) {
                 return Text('${snapshot.error}');
               }
